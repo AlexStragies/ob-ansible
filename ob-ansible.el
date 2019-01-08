@@ -93,5 +93,35 @@
           body))
     body))
 
+(defun set-current-org-block-info:ansible (orig-tangle &rest args)
+  "Set `current-org-block-info:ansible' with the current code block being tangled.
+   Taken from https://github.com/FrancisMurillo/.emacs.d/blob/955205eb0eb117b97c75fdad98f6b2851984995c/init-standard.el#L128"
+  (prog2
+      (setq current-org-block-info:ansible (org-babel-get-src-block-info))
+      (apply orig-tangle args)
+    (setq current-org-block-info:ansible nil)))
+
+(advice-add 'org-babel-tangle-single-block :around #'set-current-org-block-info:ansible)
+
+(defun org-babel-body-tangle-hook:ansible ()
+  (let* ((info current-org-block-info:ansible)
+         (language (nth 0 info))
+		 (arguments (nth 2 info))
+         (name (nth 4 info)))
+    (if (string= language "ansible")
+      (let ((module (cdr (assoc :module arguments))))
+        (save-excursion
+      	  (beginning-of-buffer)
+          (if name
+              (insert (format "- name: %s \n  " name))
+      	      (insert (format "- ")))
+          (cond ((string= "shell" module)
+                  (insert "shell:\n  cmd: |\n    ")))
+      	  (while (not (>= (point) (point-max)))
+            (forward-line)
+            (insert "    ")))))))
+
+(add-hook 'org-babel-tangle-body-hook #'org-babel-body-tangle-hook:ansible)
+
 (provide 'ob-ansible)
 ;;; ob-ansible.el ends here
