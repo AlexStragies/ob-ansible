@@ -40,6 +40,7 @@
     (user . :any)
     (become . :any)
     (oneline . :any)
+    (verbose . :any)
     (become-user . :any))
   "ansible header arguments")
 
@@ -54,10 +55,12 @@
          (oneline (assoc :oneline params))
          (become (assoc :become params))
          (become-user (cdr (assoc :become-user params)))
+         (verbose (assoc :verbose params))
          (playbook (assoc :playbook params))
          (args (concat " -i " inventory-file
                      (when user (format " -u %s" user))
                      (when become " --become")
+                     (when verbose " -v")
                      (when become-user (format " --become-user %s" become-user))
                      (when forks (format " -f %s" forks)))))
     (with-temp-file inventory-file (insert inventory))
