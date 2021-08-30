@@ -30,6 +30,9 @@
 ;;; Code:
 (require 'ob)
 
+;; optionally define a file extension for this language
+(add-to-list 'org-babel-tangle-lang-exts '("yml"))
+
 (defconst org-babel-header-args:ansible
   '((inventory . :any)
     (hosts . :any)
